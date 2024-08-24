@@ -8,7 +8,14 @@ app.use(cors());
 
 app.get("/hotels", async (req, res) => {
   try {
-    res.json(hotels);
+    const { sortedBy, order, searchQuery } = req.query;
+
+    const sortedHotels = sortHotels(hotels, sortedBy, order);
+    const filteredHotels = sortedHotels.filter((hotel) =>
+      hotel.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    res.json(filteredHotels);
   } catch (err) {
     console.error("Internal server error");
   }
@@ -17,3 +24,22 @@ app.get("/hotels", async (req, res) => {
 app.listen(port, () => {
   console.log("App is running on port 4000");
 });
+
+function sortHotels(hotels, sortedBy, order) {
+  const sortedHotels = [...hotels];
+  const ascendingMultiplier = order === "asc" ? 1 : -1;
+  if (sortedBy === "name") {
+    sortedHotels.sort((a, b) => {
+      if (a.name < b.name) return -1 * ascendingMultiplier;
+      if (a.name > b.name) return 1 * ascendingMultiplier;
+      return 0;
+    });
+  } else if (sortedBy === "location") {
+    sortedHotels.sort((a, b) => {
+      if (a.location < b.location) return -1 * ascendingMultiplier;
+      if (a.location > b.location) return 1 * ascendingMultiplier;
+      return 0;
+    });
+  }
+  return sortedHotels;
+}

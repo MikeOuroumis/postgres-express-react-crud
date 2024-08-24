@@ -29,4 +29,6 @@
 }
 
 .sort-controls {
+  display: flex;
+  flex-direction: row;
 }
