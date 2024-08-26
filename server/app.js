@@ -8,20 +8,45 @@ app.use(cors());
 
 app.get("/hotels", async (req, res) => {
   try {
-    const { sortedBy = "name", order = "asc", searchQuery = "" } = req.query;
+    const {
+      sortedBy = "name",
+      order = "asc",
+      searchQuery = "",
+      page = 1,
+      limit = 10,
+    } = req.query;
 
-    // Fetch hotels from the database with sorting and filtering
+    const offset = (page - 1) * limit;
+
+    // Fetch hotels from the database with sorting, filtering, and pagination
     const sqlQuery = `
       SELECT * FROM hotels
       WHERE LOWER(name) LIKE $1
-      ORDER BY ${sortedBy} ${order};
+      ORDER BY ${sortedBy} ${order}
+      LIMIT $2 OFFSET $3;
     `;
 
-    const values = [`%${searchQuery.toLowerCase()}%`];
+    const values = [`%${searchQuery.toLowerCase()}%`, limit, offset];
 
     const result = await pool.query(sqlQuery, values);
 
-    res.json(result.rows);
+    // Fetch the total count of results for pagination
+    const countQuery = `
+        SELECT COUNT(*) FROM hotels
+        WHERE LOWER(name) LIKE $1;
+    `;
+
+    const countResult = await pool.query(countQuery, [
+      `%${searchQuery.toLowerCase()}%`,
+    ]);
+    const totalResults = parseInt(countResult.rows[0].count, 10);
+
+    res.json({
+      data: result.rows,
+      totalResults,
+      totalPages: Math.ceil(totalResults / limit),
+      currentPage: parseInt(page, 10),
+    });
   } catch (err) {
     console.error("Internal server error", err);
     res.status(500).json({ message: "Internal server error" });
@@ -29,7 +54,7 @@ app.get("/hotels", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log("App is running on port 4000");
+  console.log(`App is running on port ${port}`);
 });
 
 // function sortHotels(hotels, sortedBy, order) {
