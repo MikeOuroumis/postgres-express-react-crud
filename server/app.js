@@ -56,22 +56,3 @@ app.get("/hotels", async (req, res) => {
 app.listen(port, () => {
   console.log(`App is running on port ${port}`);
 });
-
-// function sortHotels(hotels, sortedBy, order) {
-//   const sortedHotels = [...hotels];
-//   const ascendingMultiplier = order === "asc" ? 1 : -1;
-//   if (sortedBy === "name") {
-//     sortedHotels.sort((a, b) => {
-//       if (a.name < b.name) return -1 * ascendingMultiplier;
-//       if (a.name > b.name) return 1 * ascendingMultiplier;
-//       return 0;
-//     });
-//   } else if (sortedBy === "location") {
-//     sortedHotels.sort((a, b) => {
-//       if (a.location < b.location) return -1 * ascendingMultiplier;
-//       if (a.location > b.location) return 1 * ascendingMultiplier;
-//       return 0;
-//     });
-//   }
-//   return sortedHotels;
-// }
