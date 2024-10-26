@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const pool = require("./config/db");
 const app = express();
-const port = 4000;
 
 app.use(cors());
 
@@ -53,6 +52,4 @@ app.get("/hotels", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`App is running on port ${port}`);
-});
+module.exports = app;
