@@ -1,12 +1,6 @@
-const express = require("express");
-const cors = require("cors");
-const pool = require("./db");
-const app = express();
-const port = 4000;
+const pool = require("../config/db");
 
-app.use(cors());
-
-app.get("/hotels", async (req, res) => {
+exports.getHotels = async (req, res) => {
   try {
     const {
       sortedBy = "name",
@@ -17,24 +11,20 @@ app.get("/hotels", async (req, res) => {
     } = req.query;
 
     const offset = (page - 1) * limit;
-
-    // Fetch hotels from the database with sorting, filtering, and pagination
     const sqlQuery = `
-      SELECT * FROM hotels
-      WHERE LOWER(name) LIKE $1
-      ORDER BY ${sortedBy} ${order}
-      LIMIT $2 OFFSET $3;
-    `;
+            SELECT * FROM hotels
+            WHERE LOWER(name) LIKE $1
+            ORDER BY ${sortedBy} ${order}
+            LIMIT $2 OFFSET $3;
+          `;
 
     const values = [`%${searchQuery.toLowerCase()}%`, limit, offset];
-
     const result = await pool.query(sqlQuery, values);
 
-    // Fetch the total count of results for pagination
     const countQuery = `
-        SELECT COUNT(*) FROM hotels
-        WHERE LOWER(name) LIKE $1;
-    `;
+            SELECT COUNT(*) FROM hotels
+            WHERE LOWER(name) LIKE $1;
+          `;
 
     const countResult = await pool.query(countQuery, [
       `%${searchQuery.toLowerCase()}%`,
@@ -51,8 +41,4 @@ app.get("/hotels", async (req, res) => {
     console.error("Internal server error", err);
     res.status(500).json({ message: "Internal server error" });
   }
-});
-
-app.listen(port, () => {
-  console.log(`App is running on port ${port}`);
-});
+};
