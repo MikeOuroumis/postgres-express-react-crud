@@ -7,7 +7,9 @@ export function Header() {
       <li>
         <a href="/add-hotel">Add Hotel</a>
       </li>
-      <li>Login</li>
+      <li>
+        <a href="/login">Login</a>
+      </li>
     </ul>
   );
 }

@@ -39,3 +39,11 @@
   justify-content: space-around;
   list-style-type: none;
 }
+
+.login-screen-container {
+  display: flex;
+  background-color: black;
+  color: #fff;
+  height: 100vh;
+  justify-content: center;
+}
