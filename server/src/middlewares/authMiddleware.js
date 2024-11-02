@@ -1,41 +1,19 @@
-const { body, validationResult } = require("express-validator");
+const jwt = require("jsonwebtoken");
 
-const emailValidator = body("email")
-  .isEmail()
-  .withMessage("Please provide a valid email address")
-  .isLength({ max: 255 })
-  .withMessage("Email must be 255 characters or less");
+const authMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
 
-const passwordValidator = body("password")
-  .isLength({ min: 8 })
-  .withMessage("Password must be at least 8 characters long")
-  .matches(/\d/)
-  .withMessage("Password must contain at least one number")
-  .matches(/[A-Z]/)
-  .withMessage("Password must contain at least one uppercase letter")
-  .matches(/[a-z]/)
-  .withMessage("Password must contain at least one lowercase letter");
-
-const simplePasswordValidator = body("password")
-  .notEmpty()
-  .withMessage("Password is required");
-
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+  if (!token) {
+    return res.status(401).json({ message: "No token provided" });
   }
-  next();
+
+  try {
+    const decoded = jwt.decode(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
 };
 
-exports.validateRegistration = [
-  emailValidator,
-  passwordValidator,
-  handleValidationErrors,
-];
-exports.validateLogin = [
-  emailValidator,
-  simplePasswordValidator,
-  handleValidationErrors,
-];
+module.exports = authMiddleware;

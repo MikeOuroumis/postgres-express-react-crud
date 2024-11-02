@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import apiClient from "../api/apiClient";
 
 export function Hotels() {
   const [hotels, setHotels] = useState([]);
@@ -11,12 +12,13 @@ export function Hotels() {
   useEffect(() => {
     const fetchHotels = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:4000/hotels?order=${order}&sortedBy=${sortedBy}&searchQuery=${searchQuery}&page=${page}&limit=10`
+        const response = await apiClient.get(
+          `/hotels?order=${order}&sortedBy=${sortedBy}&searchQuery=${searchQuery}&page=${page}&limit=10`,
+          { authRequired: true }
         );
-        const data = await response.json();
-        setHotels(data.data);
-        setTotalPages(data.totalPages);
+
+        setHotels(response.data.data);
+        setTotalPages(response.data.totalPages);
       } catch (err) {
         console.error("Couldn't fetch hotels", err);
       }

@@ -18,10 +18,6 @@ exports.login = async (email, password) => {
     email,
   ]);
 
-  if (userResult.rows.length === 0) {
-    throw new Error("Invalid email or password");
-  }
-
   const user = userResult.rows[0];
 
   const isMatch = await bcrypt.compare(password, user.password);
@@ -30,11 +26,36 @@ exports.login = async (email, password) => {
     throw new Error("Invalid email or password");
   }
 
-  const token = jwt.sign(
+  // Generate an access token with a short expiration
+  const accessToken = jwt.sign(
     { id: user.id, email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
 
-  return token;
+  const refreshToken = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return { accessToken, refreshToken };
+};
+
+exports.refreshToken = async (refreshToken) => {
+  try {
+    // Verify the refresh token
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+    // Generate a new access token
+    const newAccessToken = jwt.sign(
+      { id: decoded.id, email: decoded.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    return newAccessToken;
+  } catch (error) {
+    res.status(403).json({ message: "Invalid or expired refresh token" });
+  }
 };
