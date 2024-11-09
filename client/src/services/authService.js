@@ -1,3 +1,5 @@
+import apiClient from "../api/apiClient";
+
 export async function registerUser(email, password) {
   const response = await fetch("http://localhost:4000/register", {
     method: "POST",
@@ -11,21 +13,12 @@ export async function registerUser(email, password) {
 
 export async function login(email, password) {
   try {
-    const response = await fetch("http://localhost:4000/login", {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    const response = await apiClient.post("/login", { email, password });
 
-    const data = await response.json();
+    const data = response.data;
 
     if (data.accessToken) {
       localStorage.setItem("accessToken", data.accessToken);
-    }
-    if (data.refreshToken) {
-      localStorage.setItem("refreshToken", data.refreshToken);
     }
 
     return data;

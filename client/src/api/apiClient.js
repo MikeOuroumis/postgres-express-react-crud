@@ -3,12 +3,12 @@ import axios from "axios";
 const apiClient = axios.create({
   baseURL: "http://localhost:4000",
   timeout: 10000,
+  withCredentials: true, // Ensures cookies are sent with requests
 });
 
 apiClient.interceptors.request.use(
   async (config) => {
     const accessToken = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
     const tokenExpiry = localStorage.getItem("tokenExpiry");
     const now = Date.now();
 
@@ -21,18 +21,29 @@ apiClient.interceptors.request.use(
       }
 
       if (now >= tokenExpiry) {
-        // Token expired, use refresh token to get a new access token
-        const response = await axios.post("http://localhost:4000/refresh", {
-          refreshToken,
-        });
+        // Token expired, call the refresh endpoint to get a new access token
+        try {
+          const response = await axios.post(
+            "http://localhost:4000/refresh",
+            {},
+            {
+              withCredentials: true, // Ensures the refresh token cookie is sent
+            }
+          );
 
-        const newAccessToken = response.data.accessToken;
-        const newTokenExpiry = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
+          const newAccessToken = response.data.accessToken;
+          const newTokenExpiry = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
 
-        localStorage.setItem("accessToken", newAccessToken);
-        localStorage.setItem("tokenExpiry", newTokenExpiry);
+          localStorage.setItem("accessToken", newAccessToken);
+          localStorage.setItem("tokenExpiry", newTokenExpiry);
 
-        config.headers["Authorization"] = `Bearer ${newAccessToken}`;
+          // Set the new access token in the Authorization header
+          config.headers["Authorization"] = `Bearer ${newAccessToken}`;
+        } catch (error) {
+          console.error("Token refresh failed", error);
+          // Handle token refresh failure (e.g., redirect to login)
+          return Promise.reject(new Error("Token refresh failed"));
+        }
       } else {
         config.headers["Authorization"] = `Bearer ${accessToken}`;
       }

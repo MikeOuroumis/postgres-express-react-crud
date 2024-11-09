@@ -54,8 +54,16 @@ exports.refreshToken = async (refreshToken) => {
       { expiresIn: "1h" }
     );
 
-    return newAccessToken;
+    // Generate a new refresh token
+    const newRefreshToken = jwt.sign(
+      { id: decoded.id, email: decoded.email },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" } // Adjust the expiration as needed
+    );
+
+    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   } catch (error) {
-    res.status(403).json({ message: "Invalid or expired refresh token" });
+    // Throw an error to be handled by the controller
+    throw new Error("Invalid or expired refresh token");
   }
 };
