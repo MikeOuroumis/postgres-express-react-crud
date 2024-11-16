@@ -1,4 +1,4 @@
-const pool = require("../config/db");
+const { pool } = require("../config/db");
 
 exports.fetchHotels = async (sortedBy, order, searchQuery, offset, limit) => {
   const sqlQuery = `

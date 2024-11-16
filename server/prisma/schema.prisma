@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Hotel {
+  id       Int      @id @default(autoincrement())
+  name     String   @db.VarChar(255)
+  location String   @db.VarChar(255)
+  rating   Decimal? @db.Decimal(2, 1)
+  price    Decimal? @db.Decimal(10, 2)
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @db.VarChar(255)
+  password String @db.VarChar(255)
+}
