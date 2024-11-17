@@ -47,3 +47,25 @@ exports.addHotel = async (name, location, rating, price) => {
     throw error;
   }
 };
+
+exports.getHotelsSortedByDistance = async (latitude, longitude) => {
+  const hotels = await prisma.$queryRaw`
+    SELECT h.id, 
+           h.name, 
+           h.location, 
+           h.rating, 
+           h.price, 
+           g.latitude, 
+           g.longitude,
+           (6371 * acos(
+               cos(radians(${latitude})) * cos(radians(g.latitude)) *
+               cos(radians(g.longitude) - radians(${longitude})) +
+               sin(radians(${latitude})) * sin(radians(g.latitude))
+           )) AS distance_km
+    FROM hotel h
+    JOIN geolocation g ON h.id = g.hotel_id
+    ORDER BY distance_km;
+  `;
+  console.log(hotels);
+  return hotels;
+};

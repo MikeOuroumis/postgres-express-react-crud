@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-    previewFeatures = ["driverAdapters"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -9,11 +9,12 @@ datasource db {
 }
 
 model Hotel {
-  id       Int      @id @default(autoincrement())
-  name     String   @db.VarChar(255)
-  location String   @db.VarChar(255)
-  rating   Decimal? @db.Decimal(2, 1)
-  price    Decimal? @db.Decimal(10, 2)
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(255)
+  location    String       @db.VarChar(255)
+  rating      Decimal?     @db.Decimal(2, 1)
+  price       Decimal?     @db.Decimal(10, 2)
+  Geolocation Geolocation?
 
   @@map("hotel")
 }
@@ -24,4 +25,16 @@ model User {
   password String @db.VarChar(255)
 
   @@map("user")
+}
+
+model Geolocation {
+  id        Int     @id @default(autoincrement())
+  hotel_id  Int     @unique
+  latitude  Decimal @db.Decimal(9, 6)
+  longitude Decimal @db.Decimal(9, 6)
+  address   String  @db.VarChar(255)
+
+  hotel Hotel @relation(fields: [hotel_id], references: [id])
+
+  @@map("geolocation")
 }
