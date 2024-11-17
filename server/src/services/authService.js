@@ -1,24 +1,28 @@
 const bcrypt = require("bcryptjs");
-const { pool } = require("../config/db");
+const prisma = require("../config/db");
 const jwt = require("jsonwebtoken");
 
 exports.registerUser = async (email, password) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const result = await pool.query(
-    "INSERT INTO users(email, password) VALUES ($1, $2)",
-    [email, hashedPassword]
-  );
+  const user = await prisma.user.create({
+    data: {
+      email: email,
+      password: hashedPassword,
+    },
+  });
 
-  return result.rows[0];
+  return user;
 };
 
 exports.login = async (email, password) => {
-  const userResult = await pool.query("SELECT * FROM users WHERE email=$1", [
-    email,
-  ]);
+  const user = await prisma.user.findFirst({
+    where: { email },
+  });
 
-  const user = userResult.rows[0];
+  if (!user) {
+    throw new Error("Invalid email or password");
+  }
 
   const isMatch = await bcrypt.compare(password, user.password);
 

@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+    previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -13,10 +14,14 @@ model Hotel {
   location String   @db.VarChar(255)
   rating   Decimal? @db.Decimal(2, 1)
   price    Decimal? @db.Decimal(10, 2)
+
+  @@map("hotel")
 }
 
 model User {
   id       Int    @id @default(autoincrement())
   email    String @db.VarChar(255)
   password String @db.VarChar(255)
+
+  @@map("user")
 }

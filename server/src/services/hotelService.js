@@ -1,43 +1,47 @@
-const { pool } = require("../config/db");
+const prisma = require("../config/db");
 
 exports.fetchHotels = async (sortedBy, order, searchQuery, offset, limit) => {
-  const sqlQuery = `
-  SELECT * FROM hotels
-   WHERE LOWER(name) LIKE $1
-   ORDER BY ${sortedBy} ${order}
-   LIMIT $2 OFFSET $3 `;
+  const hotels = await prisma.hotel.findMany({
+    where: {
+      name: {
+        contains: searchQuery || "", // Filters hotels with names containing `searchQuery`
+        mode: "insensitive", // Case-insensitive search
+      },
+    },
+    orderBy: {
+      [sortedBy]: order.toLowerCase(), // Dynamically set the sort field and order
+    },
+    skip: parseInt(offset, 10) || 0, // Skips rows for pagination
+    take: parseInt(limit, 10) || 10, // Limits the number of results
+  });
 
-  const values = [`%${searchQuery.toLowerCase()}%`, limit, offset];
-  const result = await pool.query(sqlQuery, values);
-
-  return result.rows;
+  return hotels;
 };
 
 exports.countHotels = async (searchQuery) => {
-  const countQuery = `
-    SELECT COUNT(*) FROM hotels
-    WHERE LOWER(name) LIKE $1;
-  `;
-
-  const countResult = await pool.query(countQuery, [
-    `%${searchQuery.toLowerCase()}%`,
-  ]);
-  const totalResults = parseInt(countResult.rows[0].count, 10);
+  const totalResults = await prisma.hotel.count({
+    where: {
+      name: {
+        contains: searchQuery,
+        mode: "insensitive",
+      },
+    },
+  });
 
   return totalResults;
 };
 
 exports.addHotel = async (name, location, rating, price) => {
-  const values = [name, location, rating, price];
-
-  const sqlQuery = `
-  INSERT INTO hotels(name, location, rating, price) 
-  VALUES($1, $2, $3, $4) RETURNING *;
-  `;
-
   try {
-    const result = await pool.query(sqlQuery, values);
-    return result.rows[0];
+    const newHotel = await prisma.hotel.create({
+      data: {
+        name,
+        location,
+        rating,
+        price,
+      },
+    });
+    return newHotel;
   } catch (error) {
     console.error("Add hotel in service Error:", error);
     throw error;
