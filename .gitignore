@@ -103,3 +103,6 @@ out/
 
 # Static
 /static
+
+#rust build files
+target
